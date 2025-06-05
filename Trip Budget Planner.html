@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trip Budget Planner</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #4CAF50; /* Bright Green */
+            --secondary-color: #FFC107; /* Bright Amber */
+            --accent-color: #03A9F4; /* Bright Light Blue */
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --danger-color: #F44336; /* Red for over budget */
+            --shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --border-radius: 10px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 800px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            font-size: 2.5em;
+            letter-spacing: 1px;
+        }
+
+        .budget-summary {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px;
+            background-color: #e8f5e9; /* Light green background for summary */
+            border-radius: var(--border-radius);
+        }
+
+        .budget-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .budget-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .budget-item label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .budget-item input[type="number"],
+        .budget-item .value-display {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .budget-item input[type="number"] {
+            border-color: var(--accent-color);
+        }
+        .budget-item input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+        }
+
+        .value-display.over-budget {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+        .value-display.under-budget {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            animation: slideInUp 0.8s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        th:first-child { border-top-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; }
+
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #eef6ee;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        td input[type="number"] {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        td input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .daily-budget-cell { /* Base style, including default color and font-weight */
+            font-weight: 500;
+            color: var(--accent-color); /* Default bright light blue */
+            text-align: right;
+            transition: color 0.3s ease, font-weight 0.3s ease;
+        }
+        .expenses-cell {
+            text-align: right;
+        }
+        .date-cell {
+            font-weight: 500;
+        }
+
+        .daily-budget-cell.daily-over-budget {
+            color: var(--danger-color); /* Red */
+            font-weight: 600; /* Bolder */
+        }
+        .daily-budget-cell.daily-under-budget {
+            color: var(--primary-color); /* Green */
+        }
+        .daily-budget-cell.daily-on-budget {
+            color: var(--text-color); /* Neutral text color */
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #fff;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Trip Budget Planner ✈️</h1>
+        </header>
+
+        <div class="budget-summary">
+            <div class="budget-item">
+                <label for="total-budget">My Total Budget ($):</label>
+                <input type="number" id="total-budget" value="1500" min="0" step="50">
+            </div>
+            <div class="budget-item">
+                <label>Money Remaining ($):</label>
+                <span id="money-remaining" class="value-display">0.00</span>
+            </div>
+            <div class="budget-item">
+                <label>Budget Status:</label>
+                <span id="over-under-budget" class="value-display">0.00</span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>My Expenses ($)</th>
+                    <th>Daily Allotment ($)</th>
+                </tr>
+            </thead>
+            <tbody id="trip-days-body">
+                <!-- Rows will be generated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-note">
+        Enjoy your trip! Track wisely.
+    </div>
+
+    <script>
+        const startDate = new Date(2024, 5, 29); // Month is 0-indexed (5 = June)
+        const endDate = new Date(2024, 6, 28);   // Month is 0-indexed (6 = July)
+
+        const totalBudgetInput = document.getElementById('total-budget');
+        const moneyRemainingDisplay = document.getElementById('money-remaining');
+        const overUnderBudgetDisplay = document.getElementById('over-under-budget');
+        const tripDaysBody = document.getElementById('trip-days-body');
+
+        let daysData = [];
+
+        const STORAGE_KEY_BUDGET = 'tripBudgetApp_totalBudget_v2'; // Changed key slightly if old data format might conflict
+        const STORAGE_KEY_EXPENSES = 'tripBudgetApp_dailyExpenses_v2';
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function initializeDays() {
+            tripDaysBody.innerHTML = '';
+            daysData = [];
+
+            let currentDate = new Date(startDate);
+            let dayIndex = 0;
+            while (currentDate <= endDate) {
+                const tr = document.createElement('tr');
+                tr.style.opacity = 0;
+                
+                const dateTd = document.createElement('td');
+                dateTd.textContent = formatDate(currentDate);
+                dateTd.classList.add('date-cell');
+
+                const expenseTd = document.createElement('td');
+                expenseTd.classList.add('expenses-cell');
+                const expenseInput = document.createElement('input');
+                expenseInput.type = 'number';
+                expenseInput.min = '0';
+                expenseInput.placeholder = '0.00';
+                expenseInput.dataset.dayIndex = dayIndex;
+                expenseInput.addEventListener('input', () => {
+                    updateCalculations();
+                    saveDataToLocalStorage();
+                });
+                expenseTd.appendChild(expenseInput);
+
+                const dailyBudgetTd = document.createElement('td');
+                dailyBudgetTd.classList.add('daily-budget-cell'); // Base class for default styling
+                dailyBudgetTd.textContent = '0.00';
+
+                tr.appendChild(dateTd);
+                tr.appendChild(expenseTd);
+                tr.appendChild(dailyBudgetTd);
+                tripDaysBody.appendChild(tr);
+
+                daysData.push({
+                    date: new Date(currentDate),
+                    expenseInput: expenseInput,
+                    dailyBudgetElement: dailyBudgetTd,
+                    rowElement: tr
+                });
+
+                currentDate.setDate(currentDate.getDate() + 1);
+                dayIndex++;
+            }
+            
+            daysData.forEach((day, index) => {
+                setTimeout(() => {
+                    day.rowElement.style.transition = 'opacity 0.5s ease-out';
+                    day.rowElement.style.opacity = 1;
+                }, index * 30);
+            });
+        }
+
+        function updateCalculations() {
+            const totalBudget = parseFloat(totalBudgetInput.value) || 0;
+            const numberOfDays = daysData.length;
+
+            if (numberOfDays === 0) return;
+
+            const dailyBudgetAllowance = numberOfDays > 0 ? (totalBudget / numberOfDays) : 0;
+
+            let totalExpenses = 0;
+            let cumulativeBudgetDifference = 0;
+
+            daysData.forEach(day => {
+                const expenseValue = parseFloat(day.expenseInput.value) || 0;
+                const expenseInputString = day.expenseInput.value.trim();
+                
+                totalExpenses += expenseValue;
+
+                const dayAllotmentCell = day.dailyBudgetElement;
+                const actualDailyAllowance = dailyBudgetAllowance;
+
+                // --- Start of Daily Allotment Column Styling ---
+                // 1. Reset all specific styling classes
+                dayAllotmentCell.classList.remove('daily-over-budget', 'daily-under-budget', 'daily-on-budget');
+                // 2. Clear any potentially conflicting inline styles from previous states (THE FIX!)
+                dayAllotmentCell.style.color = '';      // Resets to CSS-defined color
+                dayAllotmentCell.style.fontWeight = ''; // Resets to CSS-defined font-weight
+
+                if (expenseInputString !== '') {
+                    // User has entered something for the expense
+                    const remainingForDay = actualDailyAllowance - expenseValue;
+                    dayAllotmentCell.textContent = remainingForDay.toFixed(2);
+
+                    if (remainingForDay < 0) {
+                        dayAllotmentCell.classList.add('daily-over-budget');
+                    } else if (expenseValue > 0 && remainingForDay === 0) {
+                        dayAllotmentCell.classList.add('daily-on-budget');
+                    } else { // Covers remainingForDay >= 0 (and not exact spend) or expenseValue is 0
+                        dayAllotmentCell.classList.add('daily-under-budget');
+                    }
+                } else {
+                    // Input is blank, show the full daily allowance.
+                    // The .daily-budget-cell base CSS style (blue, normal weight) will apply
+                    // because we cleared inline styles and specific classes above.
+                    dayAllotmentCell.textContent = actualDailyAllowance.toFixed(2);
+                }
+                // --- End of Daily Allotment Column Styling ---
+
+                if (expenseInputString !== '') { 
+                    cumulativeBudgetDifference += (expenseValue - actualDailyAllowance);
+                }
+            });
+
+            const moneyRemaining = totalBudget - totalExpenses;
+            moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
+            moneyRemainingDisplay.classList.toggle('over-budget', moneyRemaining < 0);
+            
+            overUnderBudgetDisplay.textContent = cumulativeBudgetDifference.toFixed(2);
+            overUnderBudgetDisplay.classList.remove('over-budget', 'under-budget');
+            if (cumulativeBudgetDifference > 0) { 
+                overUnderBudgetDisplay.classList.add('over-budget');
+                overUnderBudgetDisplay.title = "You are over your cumulative daily allowances.";
+            } else if (cumulativeBudgetDifference < 0) { 
+                overUnderBudgetDisplay.classList.add('under-budget');
+                overUnderBudgetDisplay.title = `You are under your cumulative daily allowances by $${Math.abs(cumulativeBudgetDifference).toFixed(2)}.`;
+            } else {
+                overUnderBudgetDisplay.title = "You are on track with your cumulative daily allowances.";
+            }
+        }
+
+        function saveDataToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY_BUDGET, totalBudgetInput.value);
+                const dailyExpenses = daysData.map(day => day.expenseInput.value);
+                localStorage.setItem(STORAGE_KEY_EXPENSES, JSON.stringify(dailyExpenses));
+            } catch (e) {
+                console.error("Error saving data to localStorage:", e);
+            }
+        }
+
+        function loadDataFromLocalStorage() {
+            try {
+                const savedTotalBudget = localStorage.getItem(STORAGE_KEY_BUDGET);
+                if (savedTotalBudget !== null) {
+                    totalBudgetInput.value = savedTotalBudget;
+                } else {
+                    totalBudgetInput.value = "1500"; // Default
+                }
+
+                const savedDailyExpensesString = localStorage.getItem(STORAGE_KEY_EXPENSES);
+                if (savedDailyExpensesString) {
+                    const savedDailyExpenses = JSON.parse(savedDailyExpensesString);
+                    if (Array.isArray(savedDailyExpenses) && daysData.length > 0) { // Check daysData.length too
+                        daysData.forEach((day, index) => {
+                            if (index < savedDailyExpenses.length && savedDailyExpenses[index] !== undefined && savedDailyExpenses[index] !== null) {
+                                day.expenseInput.value = savedDailyExpenses[index];
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+                totalBudgetInput.value = "1500"; // Fallback default
+            }
+        }
+
+        totalBudgetInput.addEventListener('input', () => {
+            updateCalculations();
+            saveDataToLocalStorage();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDays();
+            loadDataFromLocalStorage();
+            updateCalculations();
+        });
+    </script>
+</body>
+</html>
