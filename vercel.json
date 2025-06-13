@@ -1,13 +1,12 @@
 {
   "headers": [
     {
-      "source": "/(.*)", // Apply to all paths
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
           "value": "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app; object-src 'none'; base-uri 'self';"
         }
-        // You can add other headers here if needed
       ]
     }
   ]
