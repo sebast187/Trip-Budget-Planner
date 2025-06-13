@@ -81,73 +81,125 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    
     function updateCalculations() {
+        console.log("--- updateCalculations: START ---"); // 1
+    
+        const totalBudgetInput = document.getElementById('total-budget'); // Make sure this element exists
+        const moneyRemainingDisplay = document.getElementById('money-remaining'); // Make sure this exists
+        const overUnderBudgetDisplay = document.getElementById('over-under-budget'); // Make sure this exists
+    
+        if (!totalBudgetInput || !moneyRemainingDisplay || !overUnderBudgetDisplay) {
+            console.error("updateCalculations: Critical UI elements missing!");
+            return; // Stop if essential elements aren't found
+        }
+        console.log("updateCalculations: UI elements checked."); // 2
+    
         const totalBudget = parseFloat(totalBudgetInput.value) || 0;
+        console.log("updateCalculations: totalBudget =", totalBudget); // 3
+    
+        // Ensure daysData is an array and accessible
+        if (!Array.isArray(daysData)) {
+            console.error("updateCalculations: daysData is not an array!", daysData);
+            return;
+        }
         const numberOfDays = daysData.length;
+        console.log("updateCalculations: numberOfDays =", numberOfDays); // 4
     
         if (numberOfDays === 0) {
+            console.log("updateCalculations: No days in trip, setting defaults."); // 5
             moneyRemainingDisplay.textContent = totalBudget.toFixed(2);
             overUnderBudgetDisplay.textContent = "0.00";
-            // Reset titles and classes for overUnderBudgetDisplay if it was previously set
             overUnderBudgetDisplay.classList.remove('over-budget', 'under-budget');
             overUnderBudgetDisplay.title = "No days in trip.";
+            console.log("--- updateCalculations: END (no days) ---"); // 6
             return;
         }
     
         const dailyBudgetAllowance = numberOfDays > 0 ? (totalBudget / numberOfDays) : 0;
+        console.log("updateCalculations: dailyBudgetAllowance =", dailyBudgetAllowance); // 7
         let totalExpenses = 0;
-        let cumulativeBudgetDifference = 0; // This will now only accumulate for days with actual expenses > 0
+        let cumulativeBudgetDifference = 0;
     
-        daysData.forEach(day => {
+        console.log("updateCalculations: Starting daysData.forEach loop..."); // 8
+        daysData.forEach((day, index) => {
+            console.log(`updateCalculations: Processing day index ${index}`); // 9
+    
+            // Check if 'day' object and its properties are valid
+            if (!day || !day.expenseInput || !day.dailyBudgetElement) {
+                console.error(`updateCalculations: Invalid 'day' object or properties at index ${index}`, day);
+                return; // Skip this iteration if day object is broken
+            }
+            console.log(`updateCalculations: Day ${index} - expenseInput value: '${day.expenseInput.value}'`); // 10
+    
             const expenseValue = parseFloat(day.expenseInput.value) || 0;
-            const expenseInputString = day.expenseInput.value.trim(); // Keep this for styling logic
+            const expenseInputString = day.expenseInput.value.trim();
+            console.log(`updateCalculations: Day ${index} - expenseValue: ${expenseValue}, expenseInputString: '${expenseInputString}'`); // 11
     
-            totalExpenses += expenseValue; // totalExpenses should still sum all expenses, even zeros
+            totalExpenses += expenseValue;
     
-            // Daily Allotment Column Styling (this part remains the same)
             const dayAllotmentCell = day.dailyBudgetElement;
             dayAllotmentCell.classList.remove('daily-over-budget', 'daily-under-budget', 'daily-on-budget');
-            dayAllotmentCell.style.color = '';
-            dayAllotmentCell.style.fontWeight = '';
+            // No inline style reset here, relying on base CSS for blue
     
-            if (expenseInputString !== '') { // User has entered something
+            if (expenseInputString !== '') {
+                console.log(`updateCalculations: Day ${index} - input string is NOT empty.`); // 12
                 const remainingForDay = dailyBudgetAllowance - expenseValue;
                 dayAllotmentCell.textContent = remainingForDay.toFixed(2);
-                if (remainingForDay < 0) dayAllotmentCell.classList.add('daily-over-budget');
-                else if (expenseValue > 0 && remainingForDay === 0) dayAllotmentCell.classList.add('daily-on-budget');
-                else dayAllotmentCell.classList.add('daily-under-budget'); // Covers expenseValue === 0 here if input is "0"
-            } else { // Input is blank
+                console.log(`updateCalculations: Day ${index} - remainingForDay: ${remainingForDay}`); // 13
+    
+                if (expenseValue > 0) {
+                    console.log(`updateCalculations: Day ${index} - expenseValue > 0.`); // 14
+                    if (remainingForDay < 0) {
+                        console.log(`updateCalculations: Day ${index} - adding 'daily-over-budget'.`); // 15
+                        dayAllotmentCell.classList.add('daily-over-budget');
+                    } else if (remainingForDay === 0) {
+                        console.log(`updateCalculations: Day ${index} - adding 'daily-on-budget'.`); // 16
+                        dayAllotmentCell.classList.add('daily-on-budget');
+                    } else {
+                        console.log(`updateCalculations: Day ${index} - adding 'daily-under-budget'.`); // 17
+                        dayAllotmentCell.classList.add('daily-under-budget');
+                    }
+                } else {
+                    console.log(`updateCalculations: Day ${index} - expenseValue is 0, keeping default blue.`); // 18
+                }
+            } else {
+                console.log(`updateCalculations: Day ${index} - input string IS empty, setting allowance, keeping blue.`); // 19
                 dayAllotmentCell.textContent = dailyBudgetAllowance.toFixed(2);
-                // Default styling for .daily-budget-cell will apply (blue)
             }
     
-            // --- MODIFICATION FOR cumulativeBudgetDifference ---
-            // Only consider the day for cumulative difference if an actual expense > 0 was made.
-            // If expenseInputString is empty OR expenseValue is 0, we don't add to cumulativeBudgetDifference.
-            // This means if a day has 0 expense, it doesn't pull the "Budget Status" towards "under budget".
             if (expenseValue > 0) {
+                console.log(`updateCalculations: Day ${index} - adding to cumulativeBudgetDifference.`); // 20
                 cumulativeBudgetDifference += (expenseValue - dailyBudgetAllowance);
             }
-            // --- END OF MODIFICATION ---
+            console.log(`updateCalculations: Day ${index} - current totalExpenses: ${totalExpenses}, cumulativeBudgetDifference: ${cumulativeBudgetDifference}`); // 21
         });
+        console.log("updateCalculations: Finished daysData.forEach loop."); // 22
     
         const moneyRemaining = totalBudget - totalExpenses;
         moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
         moneyRemainingDisplay.classList.toggle('over-budget', moneyRemaining < 0);
+        console.log("updateCalculations: moneyRemaining set to:", moneyRemaining); // 23
     
-        // Styling for overUnderBudgetDisplay
         overUnderBudgetDisplay.textContent = cumulativeBudgetDifference.toFixed(2);
         overUnderBudgetDisplay.classList.remove('over-budget', 'under-budget');
+        console.log("updateCalculations: cumulativeBudgetDifference for display:", cumulativeBudgetDifference); // 24
+    
         if (cumulativeBudgetDifference > 0) {
+            console.log("updateCalculations: Setting status to 'over-budget'."); // 25
             overUnderBudgetDisplay.classList.add('over-budget');
             overUnderBudgetDisplay.title = "You are over your cumulative daily allowances for days with spending.";
         } else if (cumulativeBudgetDifference < 0) {
+            console.log("updateCalculations: Setting status to 'under-budget'."); // 26
             overUnderBudgetDisplay.classList.add('under-budget');
             overUnderBudgetDisplay.title = `You are under your cumulative daily allowances by $${Math.abs(cumulativeBudgetDifference).toFixed(2)} for days with spending.`;
-        } else { // cumulativeBudgetDifference is 0 (or no days with spending yet)
+        } else {
+            console.log("updateCalculations: Setting status to 'on track'."); // 27
             overUnderBudgetDisplay.title = "You are on track with your cumulative daily allowances for days with spending (or no spending recorded yet).";
         }
+        console.log("--- updateCalculations: END ---"); // 28
     }
+
     
         const moneyRemaining = totalBudget - totalExpenses;
         moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
