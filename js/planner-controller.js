@@ -1,35 +1,57 @@
 // js/planner-controller.js
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM Element Getters - ensure these IDs/selectors match your planner.html
     const totalBudgetInput = document.getElementById('total-budget');
     const moneyRemainingDisplay = document.getElementById('money-remaining');
     const overUnderBudgetDisplay = document.getElementById('over-under-budget');
     const tripDaysBody = document.getElementById('trip-days-body');
     const tripTitleElement = document.getElementById('trip-title');
-    const containerDiv = document.querySelector('.container');
+    const containerDiv = document.querySelector('.container.container--wide'); // Targeting the specific wider container
+
+    // Initial null checks for critical elements to catch issues early
+    if (!totalBudgetInput) {
+        console.error("CRITICAL ERROR: Element with ID 'total-budget' not found!");
+    }
+    if (!moneyRemainingDisplay) {
+        console.error("CRITICAL ERROR: Element with ID 'money-remaining' not found!");
+    }
+    if (!overUnderBudgetDisplay) {
+        console.error("CRITICAL ERROR: Element with ID 'over-under-budget' not found!");
+    }
+    if (!tripDaysBody) {
+        console.error("CRITICAL ERROR: Element with ID 'trip-days-body' not found!");
+    }
+    if (!tripTitleElement) {
+        console.error("CRITICAL ERROR: Element with ID 'trip-title' not found!");
+    }
+    if (!containerDiv) {
+        console.error("CRITICAL ERROR: Element with class '.container.container--wide' not found!");
+    }
 
     let daysData = [];
     let currentTripId = null;
     let currentUserUID = null;
-    let dbStartDate, dbEndDate;
+    let dbStartDate, dbEndDate; // To store dates loaded from DB
 
     function formatDate(date) {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
     function initializeDays() {
+        if (!tripDaysBody) return; // Don't proceed if table body isn't found
         tripDaysBody.innerHTML = '';
         daysData = [];
 
         if (!dbStartDate || !dbEndDate) {
-            console.error("Start or End date not loaded for trip.");
-            tripTitleElement.textContent = "Error: Trip dates not found ✈️";
+            console.error("Start or End date not loaded for trip. Cannot initialize days.");
+            if (tripTitleElement) tripTitleElement.textContent = "Error: Trip dates not found ✈️";
             return;
         }
 
         let currentDate = new Date(dbStartDate);
-        currentDate.setHours(0, 0, 0, 0);
+        currentDate.setHours(0, 0, 0, 0); // Normalize to start of day
         const loopEndDate = new Date(dbEndDate);
-        loopEndDate.setHours(0, 0, 0, 0);
+        loopEndDate.setHours(0, 0, 0, 0); // Normalize to start of day
 
         let dayIndex = 0;
         while (currentDate <= loopEndDate) {
@@ -48,8 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
             expenseInput.placeholder = '0.00';
             expenseInput.dataset.dayIndex = dayIndex;
             expenseInput.addEventListener('input', () => {
-                updateCalculations(); // This will re-calculate and re-style
-                saveDataToFirebase(); // This saves the actual input value
+                updateCalculations();
+                saveDataToFirebase();
             });
             expenseTd.appendChild(expenseInput);
 
@@ -74,13 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         daysData.forEach((day, index) => {
             setTimeout(() => {
-                day.rowElement.style.transition = 'opacity 0.5s ease-out';
-                day.rowElement.style.opacity = 1;
-            }, index * 30);
+                if (day.rowElement) day.rowElement.style.opacity = 1; // Check if rowElement exists
+            }, index * 30 + 50); // Added small delay and stagger
         });
     }
 
     function updateCalculations() {
+        // Ensure critical display elements are available before proceeding
+        if (!totalBudgetInput || !moneyRemainingDisplay || !overUnderBudgetDisplay) {
+            console.error("updateCalculations: Missing one or more display elements.");
+            return;
+        }
+
         const totalBudget = parseFloat(totalBudgetInput.value) || 0;
         const numberOfDays = daysData.length;
 
@@ -93,49 +120,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const dailyBudgetAllowance = numberOfDays > 0 ? (totalBudget / numberOfDays) : 0;
-        let totalExpenses = 0; // This will sum all actual expenses for "Money Remaining"
-        let cumulativeBudgetDifference = 0; // For "Budget Status", only for days with spending > 0
+        let totalExpenses = 0;
+        let cumulativeBudgetDifference = 0;
 
         daysData.forEach(day => {
-            const expenseValue = parseFloat(day.expenseInput.value) || 0; // If input is blank or "0", this is 0
-            const expenseInputString = day.expenseInput.value.trim();
+            // Ensure day object and its properties are valid
+            if (!day || !day.expenseInput || !day.dailyBudgetElement) {
+                console.warn("updateCalculations: Skipping an invalid day object in daysData.");
+                return; // Skips this iteration of the loop
+            }
 
-            totalExpenses += expenseValue; // Accumulate all for money remaining
+            const expenseValue = parseFloat(day.expenseInput.value) || 0;
+            totalExpenses += expenseValue;
 
             const dayAllotmentCell = day.dailyBudgetElement;
-            // Reset specific styling classes
             dayAllotmentCell.classList.remove('daily-over-budget', 'daily-under-budget', 'daily-on-budget');
-            // We don't need to reset inline style.color/fontWeight if base .daily-budget-cell handles blue
 
-            // Logic for the "Daily Allotment ($)" cell display and color
-            if (expenseValue > 0) { // If there's actual spending for the day
+            if (expenseValue > 0) {
                 const remainingForDay = dailyBudgetAllowance - expenseValue;
                 dayAllotmentCell.textContent = remainingForDay.toFixed(2);
                 if (remainingForDay < 0) {
-                    dayAllotmentCell.classList.add('daily-over-budget'); // Red
-                } else if (remainingForDay === 0) { // Spent exactly the allowance
-                    dayAllotmentCell.classList.add('daily-on-budget'); // Neutral text color (defined in CSS)
-                } else { // remainingForDay > 0 (spent less than allowance)
-                    dayAllotmentCell.classList.add('daily-under-budget'); // Green
+                    dayAllotmentCell.classList.add('daily-over-budget');
+                } else if (remainingForDay === 0) {
+                    dayAllotmentCell.classList.add('daily-on-budget');
+                } else {
+                    dayAllotmentCell.classList.add('daily-under-budget');
                 }
-            } else { // Expense is 0 (or input is blank)
-                dayAllotmentCell.textContent = dailyBudgetAllowance.toFixed(2); // Show full allowance
-                // No specific class added, so it relies on the base .daily-budget-cell style (blue)
+            } else {
+                dayAllotmentCell.textContent = dailyBudgetAllowance.toFixed(2);
             }
 
-            // Logic for the "Budget Status" (cumulativeBudgetDifference)
-            // Only consider days with actual spending > 0 for this status
             if (expenseValue > 0) {
                 cumulativeBudgetDifference += (expenseValue - dailyBudgetAllowance);
             }
         });
 
-        // Update "Money Remaining ($)"
-        const moneyRemaining = totalBudget - totalExpenses;
-        moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
-        moneyRemainingDisplay.classList.toggle('over-budget', moneyRemaining < 0);
+        moneyRemainingDisplay.textContent = totalExpenses.toFixed(2); // Should be totalBudget - totalExpenses
+        moneyRemainingDisplay.textContent = (totalBudget - totalExpenses).toFixed(2);
+        moneyRemainingDisplay.classList.toggle('over-budget', (totalBudget - totalExpenses) < 0);
 
-        // Update "Budget Status" display
+
         overUnderBudgetDisplay.textContent = cumulativeBudgetDifference.toFixed(2);
         overUnderBudgetDisplay.classList.remove('over-budget', 'under-budget');
         if (cumulativeBudgetDifference > 0) {
@@ -144,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (cumulativeBudgetDifference < 0) {
             overUnderBudgetDisplay.classList.add('under-budget');
             overUnderBudgetDisplay.title = `You are under your cumulative daily allowances by $${Math.abs(cumulativeBudgetDifference).toFixed(2)} for days with spending.`;
-        } else { // cumulativeBudgetDifference is 0 (or no days with actual spending recorded yet)
+        } else {
             overUnderBudgetDisplay.title = "You are on track with your cumulative daily allowances for days with spending (or no spending recorded yet).";
         }
     }
@@ -152,14 +176,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let saveTimeout;
     function saveDataToFirebase() {
         if (!currentUserUID || !currentTripId) return;
+        if (!totalBudgetInput) { // Check if totalBudgetInput is available
+            console.error("saveDataToFirebase: totalBudgetInput is null, cannot save.");
+            return;
+        }
 
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             const currentTotalBudget = parseFloat(totalBudgetInput.value) || 0;
             const dailyExpensesData = {};
             daysData.forEach((day, index) => {
-                // Save the raw input value, or "0" if it's blank (this matches your original working logic)
-                dailyExpensesData[index] = day.expenseInput.value || "0";
+                if (day && day.expenseInput) { // Ensure day and expenseInput exist
+                    dailyExpensesData[index] = day.expenseInput.value || "0";
+                } else {
+                    dailyExpensesData[index] = "0"; // Default if problematic
+                }
             });
 
             const tripDataToUpdate = {
@@ -175,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadDataFromFirebase() {
         if (!currentUserUID || !currentTripId) {
-            tripTitleElement.textContent = "Error: Trip not specified ✈️";
+            if (tripTitleElement) tripTitleElement.textContent = "Error: Trip not specified ✈️";
             return;
         }
 
@@ -183,60 +214,74 @@ document.addEventListener('DOMContentLoaded', () => {
         tripRef.on('value', snapshot => {
             if (snapshot.exists()) {
                 const tripData = snapshot.val();
-                tripTitleElement.textContent = `${tripData.tripName || 'My Trip'} Budget Planner ✈️`;
-                totalBudgetInput.value = tripData.totalBudget || "0";
+                if (tripTitleElement) tripTitleElement.textContent = `${tripData.tripName || 'My Trip'} Budget Planner ✈️`;
+                if (totalBudgetInput) totalBudgetInput.value = tripData.totalBudget || "0";
+
                 dbStartDate = new Date(tripData.startDate + "T00:00:00");
                 dbEndDate = new Date(tripData.endDate + "T00:00:00");
 
-                initializeDays();
+                initializeDays(); // Initialize rows based on fetched dates
 
                 if (tripData.dailyExpenses && daysData.length > 0) {
                     daysData.forEach((day, index) => {
-                        if (tripData.dailyExpenses[index] !== undefined && tripData.dailyExpenses[index] !== null) {
-                            day.expenseInput.value = tripData.dailyExpenses[index];
-                        } else {
-                            day.expenseInput.value = '';
+                        if (day && day.expenseInput) { // Check before accessing expenseInput
+                            if (tripData.dailyExpenses[index] !== undefined && tripData.dailyExpenses[index] !== null) {
+                                day.expenseInput.value = tripData.dailyExpenses[index];
+                            } else {
+                                day.expenseInput.value = '';
+                            }
                         }
                     });
                 }
                 updateCalculations(); // Crucial to call this after loading and populating inputs
             } else {
                 console.error("Trip data not found in Firebase!");
-                tripTitleElement.textContent = "Trip Not Found ✈️";
+                if (tripTitleElement) tripTitleElement.textContent = "Trip Not Found ✈️";
                 alert("Could not find data for this trip. It might have been deleted.");
                 window.location.href = "index.html";
             }
         }, error => {
             console.error("Error loading data from Firebase: ", error);
-            tripTitleElement.textContent = "Error Loading Trip ✈️";
+            if (tripTitleElement) tripTitleElement.textContent = "Error Loading Trip ✈️";
         });
     }
 
-    const backLink = document.createElement('a');
-    backLink.href = 'index.html';
-    backLink.textContent = '← Back to My Trips';
-    backLink.classList.add('back-link');
-    containerDiv.insertBefore(backLink, containerDiv.firstChild);
+    // Add "Back to My Trips" link
+    if (containerDiv) { // Check if containerDiv exists
+        const backLink = document.createElement('a');
+        backLink.href = 'index.html';
+        backLink.textContent = '← Back to My Trips';
+        backLink.classList.add('back-link');
+        containerDiv.insertBefore(backLink, containerDiv.firstChild);
+    }
 
-    totalBudgetInput.addEventListener('input', () => {
-        updateCalculations();
-        saveDataToFirebase();
-    });
+    // Event listener for total budget input - THIS WAS THE LIKELY ERROR SPOT
+    if (totalBudgetInput) { // <<<< KEY FIX: Check if totalBudgetInput was found
+        totalBudgetInput.addEventListener('input', () => {
+            updateCalculations();
+            saveDataToFirebase();
+        });
+    } else {
+        // This message will appear if the earlier console.error for totalBudgetInput ran
+        console.warn("Could not attach event listener to totalBudgetInput as it was not found in the DOM.");
+    }
 
+    // Main execution flow
     const urlParams = new URLSearchParams(window.location.search);
     currentTripId = urlParams.get('tripId');
 
     if (!currentTripId) {
         alert("No trip specified! Redirecting to homepage.");
         window.location.href = 'index.html';
-        return;
+        return; // Stop further execution if no tripId
     }
 
     auth.onAuthStateChanged(user => {
         if (user) {
             currentUserUID = user.uid;
-            loadDataFromFirebase();
+            loadDataFromFirebase(); // Load data once user is confirmed and tripId is present
         } else {
+            // User is signed out or not yet signed in
             alert("You need to be logged in to view this page. Redirecting to login.");
             window.location.href = 'index.html';
         }
