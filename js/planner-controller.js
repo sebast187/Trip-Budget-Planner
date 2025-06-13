@@ -103,43 +103,57 @@ document.addEventListener('DOMContentLoaded', () => {
     
             totalExpenses += expenseValue;
     
-            // --- Daily Allotment Column Styling MODIFICATION ---
             const dayAllotmentCell = day.dailyBudgetElement;
-            // 1. Reset all specific styling classes
+            // Reset classes for daily allotment cell
             dayAllotmentCell.classList.remove('daily-over-budget', 'daily-under-budget', 'daily-on-budget');
-            // 2. Clear any potentially conflicting inline styles (good practice)
-            dayAllotmentCell.style.color = '';
-            dayAllotmentCell.style.fontWeight = '';
+            // IMPORTANT: We do NOT reset dayAllotmentCell.style.color here initially,
+            // as the base .daily-budget-cell class provides the blue color.
     
-            if (expenseInputString !== '') { // User has entered something (could be "0" or any other number)
+            if (expenseInputString !== '') { // User has entered something (could be "0")
                 const remainingForDay = dailyBudgetAllowance - expenseValue;
                 dayAllotmentCell.textContent = remainingForDay.toFixed(2);
     
-                if (expenseValue > 0) { // Only apply specific colors if actual spending occurred
+                if (expenseValue > 0) { // If there's actual spending
                     if (remainingForDay < 0) {
                         dayAllotmentCell.classList.add('daily-over-budget'); // Red
                     } else if (remainingForDay === 0) { // Spent exactly the allowance
-                        dayAllotmentCell.classList.add('daily-on-budget'); // Neutral text color
+                        dayAllotmentCell.classList.add('daily-on-budget'); // Neutral text color (defined in CSS)
                     } else { // remainingForDay > 0 (spent less than allowance)
                         dayAllotmentCell.classList.add('daily-under-budget'); // Green
                     }
-                } else { // expenseValue is 0 (but input was not blank, e.g., user typed "0")
-                    // Keep default blue color. The .daily-budget-cell base style will apply
-                    // because we cleared specific classes and inline styles above.
-                    // Text content is already set to dailyBudgetAllowance (since remainingForDay = dailyBudgetAllowance - 0).
+                } else {
+                    // Expense is 0 (e.g., user typed "0")
+                    // No class is added, so it relies on the base .daily-budget-cell style (blue)
+                    // The textContent is already set to dailyBudgetAllowance
                 }
             } else { // Input is blank
                 dayAllotmentCell.textContent = dailyBudgetAllowance.toFixed(2);
-                // Keep default blue color. The .daily-budget-cell base style will apply.
+                // No class is added, so it relies on the base .daily-budget-cell style (blue)
             }
-            // --- END of Daily Allotment Column Styling MODIFICATION ---
     
-    
-            // Cumulative Budget Difference Logic (from previous change - only for expenseValue > 0)
+            // Cumulative Budget Difference Logic
             if (expenseValue > 0) {
                 cumulativeBudgetDifference += (expenseValue - dailyBudgetAllowance);
             }
         });
+    
+        const moneyRemaining = totalBudget - totalExpenses;
+        moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
+        moneyRemainingDisplay.classList.toggle('over-budget', moneyRemaining < 0);
+    
+        // Styling for overUnderBudgetDisplay
+        overUnderBudgetDisplay.textContent = cumulativeBudgetDifference.toFixed(2);
+        overUnderBudgetDisplay.classList.remove('over-budget', 'under-budget');
+        if (cumulativeBudgetDifference > 0) {
+            overUnderBudgetDisplay.classList.add('over-budget');
+            overUnderBudgetDisplay.title = "You are over your cumulative daily allowances for days with spending.";
+        } else if (cumulativeBudgetDifference < 0) {
+            overUnderBudgetDisplay.classList.add('under-budget');
+            overUnderBudgetDisplay.title = `You are under your cumulative daily allowances by $${Math.abs(cumulativeBudgetDifference).toFixed(2)} for days with spending.`;
+        } else {
+            overUnderBudgetDisplay.title = "You are on track with your cumulative daily allowances for days with spending (or no spending recorded yet).";
+        }
+    }
     
         const moneyRemaining = totalBudget - totalExpenses;
         moneyRemainingDisplay.textContent = moneyRemaining.toFixed(2);
