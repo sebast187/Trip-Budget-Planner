@@ -140,22 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveDataToFirebase() {
         if (!currentUserUID || !currentTripId) return;
 
+        // Debounce saving to avoid too many writes
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             const currentTotalBudget = parseFloat(totalBudgetInput.value) || 0;
             const dailyExpensesData = {};
-
-            console.log("--- Saving Data ---"); // Log when saving starts
             daysData.forEach((day, index) => {
-                // CHANGE HERE: Don't convert empty string to "0" automatically on save.
-                // Let an empty input be saved as an empty string.
-                // Calculation logic will still treat parseFloat('') as 0.
-                const expenseVal = day.expenseInput.value;
-                dailyExpensesData[index] = expenseVal; // Store the raw value (could be "" or "123")
-                console.log(`Day ${index} (from daysData[${index}].expenseInput.value): '${expenseVal}', will be saved as: '${dailyExpensesData[index]}'`);
+                dailyExpensesData[index] = day.expenseInput.value || "0";
             });
-            console.log("Full dailyExpensesData to save:", JSON.stringify(dailyExpensesData));
-
 
             const tripDataToUpdate = {
                 totalBudget: currentTotalBudget,
@@ -163,10 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             db.ref(`users/${currentUserUID}/trips/${currentTripId}`).update(tripDataToUpdate)
-                .then(() => console.log("Data saved to Firebase successfully!"))
+                .then(() => console.log("Data saved to Firebase."))
                 .catch(error => console.error("Error saving data to Firebase: ", error));
         }, 1000); // Save 1 second after the last input
     }
+
 
     function loadDataFromFirebase() {
         if (!currentUserUID || !currentTripId) {
@@ -176,24 +169,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const tripRef = db.ref(`users/${currentUserUID}/trips/${currentTripId}`);
         tripRef.on('value', snapshot => { // Use 'on' for real-time updates if needed, or 'once' for single load
-            if (tripData.dailyExpenses && daysData.length > 0) {
-                daysData.forEach((day, index) => {
-                    const expenseValueFromDb = tripData.dailyExpenses[index];
-                    // If the value from DB is null, undefined, or an empty string, set input to empty.
-                    // Otherwise, use the value from DB (which could be "0" or "123").
-                    if (expenseValueFromDb !== undefined && expenseValueFromDb !== null) {
-                        day.expenseInput.value = expenseValueFromDb;
-                    } else {
-                        // This case handles if the key doesn't exist for the index
-                        day.expenseInput.value = '';
-                    }
-                });
-            } else if (daysData.length > 0) { // If tripData.dailyExpenses is null/undefined or empty object
-                    daysData.forEach(day => {
-                        day.expenseInput.value = ''; // All days become empty
+            if (snapshot.exists()) {
+                const tripData = snapshot.val();
+                tripTitleElement.textContent = `${tripData.tripName || 'My Trip'} Budget Planner ✈️`;
+                totalBudgetInput.value = tripData.totalBudget || "0";
+
+                // Dates are stored as YYYY-MM-DD strings.
+                // The Date constructor with "YYYY-MM-DD" can be tricky with timezones for comparisons.
+                // Adding "T00:00:00" helps stabilize it to local midnight.
+                dbStartDate = new Date(tripData.startDate + "T00:00:00");
+                dbEndDate = new Date(tripData.endDate + "T00:00:00");
+
+                initializeDays(); // Initialize rows based on fetched dates
+
+                if (tripData.dailyExpenses && daysData.length > 0) {
+                    daysData.forEach((day, index) => {
+                        if (tripData.dailyExpenses[index] !== undefined && tripData.dailyExpenses[index] !== null) {
+                            day.expenseInput.value = tripData.dailyExpenses[index];
+                        } else {
+                            day.expenseInput.value = ''; // Clear if no data for that day
+                        }
                     });
-            }
-            updateCalculations(); // This should now use correctly populated inputs
+                }
+                updateCalculations();
             } else {
                 console.error("Trip data not found in Firebase!");
                 tripTitleElement.textContent = "Trip Not Found ✈️";
