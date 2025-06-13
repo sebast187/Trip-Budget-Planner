@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trip Budget Central</title>
-    <link rel="stylesheet" href="css/style.css"> <!-- Link the external CSS -->
-    <!-- Removed inline <style> block -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container"> <!-- Added a main container -->
-        <h1>Trip Budget Central ✈️</h1> <!-- Main title for the app -->
+    <div class="container">
+        <h1>Trip Budget Central ✈️</h1>
 
         <nav>
-            <span id="user-status"></span> <!-- Will be populated by JS -->
+            <span id="user-status"></span>
             <button id="logout-button" class="hidden">Logout</button>
         </nav>
 
         <div id="auth-forms">
-            <div class="auth-container" id="login-form">
+            <!-- Changed div to form for semantic correctness and .reset() functionality -->
+            <form class="auth-container" id="login-form">
                 <h2>Login</h2>
                 <div class="form-group">
                     <label for="login-email">Email:</label>
@@ -27,11 +27,12 @@
                     <label for="login-password">Password:</label>
                     <input type="password" id="login-password" placeholder="••••••••" required>
                 </div>
-                <button id="login-button">Login</button>
+                <button type="button" id="login-button">Login</button> <!-- type="button" to prevent default form submit -->
                 <p class="auth-toggle-link">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
-            </div>
+            </form>
 
-            <div class="auth-container hidden" id="signup-form">
+            <!-- Changed div to form for semantic correctness and .reset() functionality -->
+            <form class="auth-container hidden" id="signup-form">
                 <h2>Sign Up</h2>
                 <div class="form-group">
                     <label for="signup-email">Email:</label>
@@ -41,9 +42,9 @@
                     <label for="signup-password">Password:</label>
                     <input type="password" id="signup-password" placeholder="Create a password" required>
                 </div>
-                <button id="signup-button">Sign Up</button>
+                <button type="button" id="signup-button">Sign Up</button> <!-- type="button" -->
                 <p class="auth-toggle-link">Already have an account? <a href="#" id="show-login">Login</a></p>
-            </div>
+            </form>
         </div>
 
         <div id="app-content" class="hidden">
@@ -53,11 +54,10 @@
                     <!-- Trips will be listed here by JS -->
                 </ul>
                 <p id="no-trips-message" class="hidden">No trips yet. Create one!</p>
-                <!-- Changed button to a link styled as a button for navigation -->
                 <a href="new-trip.html" id="go-to-create-trip" class="button-style">Create New Trip</a>
             </div>
         </div>
-    </div> <!-- End of .container -->
+    </div>
 
     <div class="footer-note">
         Plan smarter, travel further.
