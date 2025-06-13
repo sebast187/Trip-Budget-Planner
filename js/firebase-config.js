@@ -1,14 +1,13 @@
 // js/firebase-config.js
-
-// TODO: Replace with your project's actual Firebase SDK configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com", // Make sure this is correct
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBF7PdhTa3xViN8pEPRyrMCCg7FylNMu_U",
+  authDomain: "trip-budget-planner-c35c9.firebaseapp.com",
+  databaseURL: "https://trip-budget-planner-c35c9-default-rtdb.firebaseio.com",
+  projectId: "trip-budget-planner-c35c9",
+  storageBucket: "trip-budget-planner-c35c9.appspot.com", // Corrected from .firebasestorage.app
+  messagingSenderId: "869784882422",
+  appId: "1:869784882422:web:8a53778545fc24b16930d7",
+  measurementId: "G-VBXPQWV9VR"
 };
 
 // Initialize Firebase
