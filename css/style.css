@@ -178,18 +178,24 @@ button.danger:hover, .button-style.danger:hover {
     margin-bottom: 15px;
     border-radius: 6px;
     text-align: center;
+    /* Add any default styling for .message if needed, like a light grey background */
+    /* background-color: #f0f0f0; */
+    /* border: 1px solid #ddd; */
 }
+.message:empty { /* Hide if empty to prevent empty box showing */
+    display: none;
+}
+
 .message.error {
-    background-color: #ffebee;
-    color: var(--danger-color);
+    background-color: #ffebee; /* Light red */
+    color: var(--danger-color); /* Darker red text */
     border: 1px solid var(--danger-color);
 }
 .message.success {
-    background-color: #e8f5e9;
-    color: var(--success-color);
+    background-color: #e8f5e9; /* Light green */
+    color: var(--success-color); /* Darker green text */
     border: 1px solid var(--success-color);
 }
-
 
 /* --- Specific to index.html (Landing/Login/Signup) --- */
 .auth-container {
