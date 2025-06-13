@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Trip</title>
+    <link rel="stylesheet" href="css/style.css"> <!-- Link the external CSS -->
+    <!-- Removed inline <style> block -->
+</head>
+<body>
+    <div class="container"> <!-- Added a main container -->
+        <h1>Create New Trip</h1>
+        <div id="new-trip-form-container">
+            <div class="form-group">
+                <label for="trip-name">Trip Name:</label>
+                <input type="text" id="trip-name" placeholder="e.g., Summer Vacation in Italy" required>
+            </div>
+            <div class="form-group">
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" required>
+            </div>
+            <div class="form-group">
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date" required>
+            </div>
+            <div class="form-group">
+                <label for="initial-budget">Initial Budget ($):</label>
+                <input type="number" id="initial-budget" min="0" step="1" placeholder="e.g., 2000" required>
+            </div>
+            <button id="create-trip-button">Create Trip</button>
+            <p id="message" class="message"></p> <!-- Added class for styling messages -->
+            <p class="text-center"><a href="index.html">← Back to My Trips</a></p>
+        </div>
+    </div> <!-- End of .container -->
+
+     <div class="footer-note">
+        Fill in the details to start planning!
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/new-trip-controller.js"></script>
+</body>
+</html>
