@@ -2,13 +2,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tripsListUL = document.getElementById('trips-list');
     const noTripsMessage = document.getElementById('no-trips-message');
-    const goToCreateTripButton = document.getElementById('go-to-create-trip');
+    //const goToCreateTripButton = document.getElementById('go-to-create-trip');
 
-    goToCreateTripButton.addEventListener('click', () => {
+    //goToCreateTripButton.addEventListener('click', () => {
         // Option 1: Navigate to a new page
-        window.location.href = 'new-trip.html';
+        //window.location.href = 'new-trip.html';
         // Option 2: Show a modal (more complex to implement here, would involve adding modal HTML to index.html)
-    });
+    //});
 
     window.loadUserTrips = (userId) => {
         if (!userId) return;
