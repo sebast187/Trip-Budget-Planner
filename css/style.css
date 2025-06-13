@@ -40,13 +40,19 @@ body {
 /* --- Main Container --- */
 .container {
     background-color: var(--container-bg);
-    padding: 25px 30px; /* Adjusted padding slightly */
+    padding: 25px 30px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     width: 90%;
-    max-width: 600px; /* Max width suitable for forms and lists */
+    max-width: 600px; /* Default max-width for login, new-trip */
     animation: fadeIn 0.7s ease-out;
-    margin-bottom: 20px; /* Space for footer note if any */
+    margin-bottom: 20px;
+    position: relative; /* For absolutely positioned children if any, or ::before/::after */
+}
+
+/* Modifier for wider containers like the planner page */
+.container--wide {
+    max-width: 950px; /* Increased width for planner */
 }
 
 @keyframes fadeIn {
@@ -124,7 +130,7 @@ input[type="date"]:focus {
 }
 
 /* --- Buttons --- */
-button, .button-style { /* Added .button-style for <a> tags styled as buttons */
+button, .button-style {
     display: inline-block;
     background-color: var(--primary-color);
     color: white;
@@ -137,11 +143,11 @@ button, .button-style { /* Added .button-style for <a> tags styled as buttons */
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    width: 100%; /* Make buttons full width by default */
-    margin-top: 10px; /* Add some space above buttons */
+    width: 100%;
+    margin-top: 10px;
 }
 button:hover, .button-style:hover {
-    background-color: #3e8e41; /* Darker green */
+    background-color: #3e8e41;
     transform: translateY(-2px);
 }
 button:active, .button-style:active {
@@ -150,23 +156,23 @@ button:active, .button-style:active {
 
 button.secondary, .button-style.secondary {
     background-color: var(--secondary-color);
-    color: var(--text-color); /* Darker text for amber button */
+    color: var(--text-color);
 }
 button.secondary:hover, .button-style.secondary:hover {
-    background-color: #e6ac00; /* Darker amber */
+    background-color: #e6ac00;
 }
 
 button.danger, .button-style.danger {
     background-color: var(--danger-color);
 }
 button.danger:hover, .button-style.danger:hover {
-    background-color: #d32f2f; /* Darker red */
+    background-color: #d32f2f;
 }
 
 
 /* --- Utility Classes --- */
 .hidden {
-    display: none !important; /* Ensure it overrides other display properties */
+    display: none !important;
 }
 
 .text-center {
@@ -178,39 +184,36 @@ button.danger:hover, .button-style.danger:hover {
     margin-bottom: 15px;
     border-radius: 6px;
     text-align: center;
-    /* Add any default styling for .message if needed, like a light grey background */
-    /* background-color: #f0f0f0; */
-    /* border: 1px solid #ddd; */
 }
-.message:empty { /* Hide if empty to prevent empty box showing */
+.message:empty {
     display: none;
 }
-
 .message.error {
-    background-color: #ffebee; /* Light red */
-    color: var(--danger-color); /* Darker red text */
+    background-color: #ffebee;
+    color: var(--danger-color);
     border: 1px solid var(--danger-color);
 }
 .message.success {
-    background-color: #e8f5e9; /* Light green */
-    color: var(--success-color); /* Darker green text */
+    background-color: #e8f5e9;
+    color: var(--success-color);
     border: 1px solid var(--success-color);
 }
 
+
 /* --- Specific to index.html (Landing/Login/Signup) --- */
-.auth-container {
+.auth-container { /* This will be a <form> tag now */
     border: 1px solid #e0e0e0;
     padding: 25px;
     border-radius: var(--border-radius);
     margin-bottom: 25px;
-    background-color: #fdfdfd; /* Slightly off-white for auth boxes */
+    background-color: #fdfdfd;
 }
 .auth-container h2 {
     margin-top: 0;
     font-size: 1.6em;
 }
 
-.auth-toggle-link { /* For "Don't have an account? Sign Up" */
+.auth-toggle-link {
     display: block;
     text-align: center;
     margin-top: 15px;
@@ -227,20 +230,20 @@ button.danger:hover, .button-style.danger:hover {
     border-radius: 6px;
     color: var(--primary-color);
 }
-#user-status:empty { /* Hide if empty for better look before login */
+#user-status:empty {
     display: none;
 }
 
 
 #logout-button {
-    width: auto; /* Don't make logout full width */
+    width: auto;
     padding: 10px 18px;
-    margin: 0 auto 20px auto; /* Center it */
-    display: block; /* To allow margin auto to work */
+    margin: 0 auto 20px auto;
+    display: block;
     background-color: var(--accent-color);
 }
 #logout-button:hover {
-     background-color: #0288d1; /* Darker blue */
+     background-color: #0288d1;
 }
 
 
@@ -271,20 +274,19 @@ button.danger:hover, .button-style.danger:hover {
 
 #trips-list li a {
     font-weight: 500;
-    flex-grow: 1; /* Allow link to take available space */
+    flex-grow: 1;
 }
 
 #trips-list li button { /* Delete button for trips */
-    width: auto; /* Override default full width */
+    width: auto;
     padding: 8px 12px;
     font-size: 0.9em;
     margin-left: 15px;
-    margin-top: 0; /* Override default margin-top */
-    background-color: var(--danger-color);
+    margin-top: 0;
+    background-color: var(--danger-color); /* Already has .danger class styles */
 }
-#trips-list li button:hover {
-    background-color: #c62828; /* Darker red */
-}
+/* No need for specific hover if .danger:hover is sufficient */
+
 
 #no-trips-message {
     text-align: center;
@@ -296,17 +298,16 @@ button.danger:hover, .button-style.danger:hover {
 
 /* --- Specific to new-trip.html --- */
 /* Most styles are covered by global form styles */
-#new-trip-form-container a { /* "Back to My Trips" link */
-    display: inline-block; /* To behave more like a button for spacing */
+#new-trip-form-container a.back-link-new-trip { /* More specific selector if needed */
+    display: inline-block;
     margin-top: 15px;
     font-weight: 500;
+    text-align: center; /* If you want the "Back to My Trips" link centered under the button */
+    width: 100%; /* If you want it full width like other buttons */
 }
 
 
 /* --- Specific to planner.html (from original) --- */
-/* Add relevant planner.html styles here if they aren't global */
-/* For example, the .budget-summary and table styles */
-
 header { /* Common header for planner */
     text-align: center;
     margin-bottom: 30px;
@@ -314,7 +315,6 @@ header { /* Common header for planner */
     padding-bottom: 20px;
 }
 
-/* Styles from planner.html adapted */
 .budget-summary {
     display: flex;
     justify-content: space-around;
@@ -323,7 +323,7 @@ header { /* Common header for planner */
     flex-wrap: wrap;
     gap: 15px;
     padding: 15px;
-    background-color: #e8f5e9; /* Light green background for summary */
+    background-color: #e8f5e9;
     border-radius: var(--border-radius);
 }
 
@@ -334,7 +334,7 @@ header { /* Common header for planner */
     padding: 10px;
     border-radius: 8px;
     transition: transform 0.3s ease;
-    text-align: center; /* Ensure label is centered too */
+    text-align: center;
 }
 
 .budget-item:hover {
@@ -347,7 +347,7 @@ header { /* Common header for planner */
     color: var(--primary-color);
 }
 
-.budget-item input[type="number"], /* From planner input */
+.budget-item input[type="number"],
 .budget-item .value-display {
     font-size: 1.2em;
     font-weight: 600;
@@ -357,13 +357,13 @@ header { /* Common header for planner */
     text-align: center;
     min-width: 120px;
     transition: all 0.3s ease;
-    width: auto; /* Override global input width */
+    width: auto;
 }
 
-.budget-item input[type="number"] { /* From planner input */
+.budget-item input[type="number"] {
     border-color: var(--accent-color);
 }
-.budget-item input[type="number"]:focus { /* From planner input */
+.budget-item input[type="number"]:focus {
     outline: none;
     border-color: var(--input-focus-border-color);
     box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
@@ -415,17 +415,10 @@ tr:hover {
     transition: background-color 0.2s ease-in-out;
 }
 
-/* Planner table specific input (if different from global) */
-td input[type="number"] {
-    width: 90%; /* For planner table inputs */
+td input[type="number"] { /* Planner table specific input */
+    width: 90%;
     padding: 8px;
-    /* border: 1px solid #ddd; Global style covers this */
-    /* border-radius: 4px; Global style covers this */
-    /* box-sizing: border-box; Global style covers this */
-    /* transition: border-color 0.3s ease; Global style covers this */
 }
-/* td input[type="number"]:focus { Global style covers this } */
-
 
 .daily-budget-cell {
     font-weight: 500;
@@ -455,8 +448,23 @@ td input[type="number"] {
     text-align: center;
     margin-top: 30px;
     font-size: 0.9em;
-    color: var(--light-text-color); /* Light text for dark background */
+    color: var(--light-text-color);
     opacity: 0.8;
+}
+
+.back-link { /* From planner.html */
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+.back-link:hover {
+    background-color: #FFB300;
 }
 
 /* --- Mobile Responsiveness --- */
@@ -464,15 +472,19 @@ td input[type="number"] {
     .container {
         padding: 20px;
     }
+    .container--wide { /* Ensure wide container also shrinks */
+        max-width: 90%; /* Let it be responsive within the viewport */
+    }
+
     h1 { font-size: 1.8em; }
     h2 { font-size: 1.5em; }
 
     .budget-summary {
-        flex-direction: column; /* Stack summary items */
+        flex-direction: column;
         gap: 20px;
     }
     .budget-item {
-        width: 100%; /* Make summary items full width */
+        width: 100%;
     }
      #trips-list li {
         flex-direction: column;
@@ -480,7 +492,7 @@ td input[type="number"] {
         gap: 8px;
     }
     #trips-list li button {
-        width: 100%; /* Make delete button full width on mobile */
+        width: 100%;
         margin-left: 0;
         margin-top: 8px;
     }
@@ -488,7 +500,7 @@ td input[type="number"] {
 
 @media (max-width: 480px) {
     body { padding: 10px; }
-    .container { padding: 15px; }
+    .container, .container--wide { padding: 15px; } /* Apply to both */
     button, .button-style { padding: 10px 15px; font-size: 0.9em; }
     input[type="text"],
     input[type="email"],
@@ -499,19 +511,44 @@ td input[type="number"] {
         font-size: 0.95em;
     }
     th, td { padding: 8px 10px; font-size: 0.9em; }
-}
 
-.back-link { /* From planner.html */
-    display: inline-block;
-    margin-bottom: 20px;
-    padding: 8px 15px;
-    background-color: var(--secondary-color);
-    color: var(--text-color); /* Darker text for amber button */
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-}
-.back-link:hover {
-    background-color: #FFB300; /* Darker amber */
+    /* Make table cells stack for very small screens if desired */
+    /* This is a more complex table transformation, optional */
+    /*
+    .page-planner table,
+    .page-planner thead,
+    .page-planner tbody,
+    .page-planner th,
+    .page-planner td,
+    .page-planner tr {
+        display: block;
+    }
+    .page-planner thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    .page-planner tr { border: 1px solid #ccc; margin-bottom: 5px; }
+    .page-planner td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+    .page-planner td:before {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+    }
+    .page-planner td:nth-of-type(1):before { content: "Date"; }
+    .page-planner td:nth-of-type(2):before { content: "My Expenses ($)"; }
+    .page-planner td:nth-of-type(3):before { content: "Daily Allotment ($)"; }
+    .page-planner .expenses-cell input { width: 100% !important; }
+    */
 }
